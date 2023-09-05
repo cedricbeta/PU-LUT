@@ -3,17 +3,19 @@ from glob import glob
 import open3d as o3d
 import numpy as np
 import argparse
+import torch
 from tqdm import tqdm
 from einops import rearrange
+from models.utils import normalize_point_cloud, add_noise
 import h5py
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='8i Train Data Generation Arguments')
     parser.add_argument('--up_rate', default=2, type=int, help='the upsampling ratio')
-    parser.add_argument('--patch_size', default=256, type=int, help='the number of points per patch')
-    parser.add_argument('--raw_dir', default='../data/longdress/Ply/', type=str, help='input mesh dir')
-    parser.add_argument('--save_dir', default='../data/longdress/', type=str, help='output point cloud dir')
+    parser.add_argument('--patch_size', default=8, type=int, help='the number of points per patch')
+    parser.add_argument('--raw_dir', default='/home/chendong/PU-LUT/data/longdress/Ply/', type=str, help='input mesh dir')
+    parser.add_argument('--save_dir', default='/home/chendong/PU-LUT/data/longdress/', type=str, help='output point cloud dir')
     args = parser.parse_args()
 
     dir_name = 'input_' + str(int(args.up_rate)) + 'X'
@@ -42,7 +44,7 @@ if __name__ == "__main__":
         # np.savetxt(gt_save_path, gt_pts, fmt='%.6f')
         
         gt_kd = o3d.geometry.KDTreeFlann(pcd)
-        seed_pts = np.asarray(pcd.uniform_down_sample(args.patch_size).points)
+        seed_pts = np.asarray(pcd.uniform_down_sample(8).points)
         # seed_pts = np.array(seed.points)
         
         for j in range(seed_pts.shape[0]):
@@ -56,11 +58,10 @@ if __name__ == "__main__":
         
     tmp = np.asarray(training_set_gt)
     tmp2 = np.asarray(training_set_input)
-    filename = "8i_poisson_" + str(args.patch_size) + "_poisson_" + str(args.patch_size * args.up_rate)+ ".h5"
-    save_path = os.path.join(args.save_dir, filename)
+    save_path = os.path.join(args.save_dir, "8i_poisson_8_poisson_16.h5")
     
     hf = h5py.File(save_path, 'w')
     
-    hf.create_dataset('poisson_' + str(args.patch_size * args.up_rate), data=tmp)
-    hf.create_dataset('poisson_' + str(args.patch_size), data=tmp2)
+    hf.create_dataset('poisson_16', data=tmp)
+    hf.create_dataset('poisson_8', data=tmp2)
     hf.close()

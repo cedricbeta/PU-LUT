@@ -75,7 +75,7 @@ main ()
   
 
   uint16_t i = 0;
-  for (auto it : recursive_directory_range("/home/v-chendwang/test-playground/dataset/kinoptic_ptclouds/training/input_2X/input_ld/"))
+  for (auto it : recursive_directory_range("/home/chendong/PU-LUT/data/kinoptic_ptclouds/input/"))
   {
       pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
       pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
@@ -91,7 +91,7 @@ main ()
                 << std::endl;
 
       const std::string c_path = it.path().string();
-      const std::string cf_path = std::regex_replace(c_path, std::regex("input_2X"), "input_2X_filtered");
+      const std::string cf_path = std::regex_replace(c_path, std::regex("input"), "input_filtered");
 
       // Create the filtering object
       pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
