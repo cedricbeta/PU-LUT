@@ -7,6 +7,7 @@ import os
 import numpy as np
 import random
 from torch.autograd import grad
+from scipy.interpolate import interp1d
 from einops import rearrange, repeat
 from sklearn.neighbors import NearestNeighbors
 from models.Chamfer3D.dist_chamfer_3D import chamfer_3DDist
@@ -199,3 +200,16 @@ def get_query_points(input_pts, args):
 def reset_model_args(train_args, model_args):
     for arg in vars(train_args):
         setattr(model_args, arg, getattr(train_args, arg))
+        
+        
+def dilate_last_dimension(tensor, dilation_rate):
+    _, _, k = tensor.shape
+    # print(tensor.shape)
+    new_k = int(k * dilation_rate)
+    
+    rand_perm = torch.randperm(k).cuda()[:new_k].unsqueeze(0).unsqueeze(1).expand(tensor.shape[0], tensor.shape[1], new_k)
+    # print(rand_perm)
+    # Gather values from tensor using the randomly permuted indices
+    dilated_tensor = torch.gather(tensor, 2, rand_perm)
+    
+    return dilated_tensor

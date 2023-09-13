@@ -2,7 +2,7 @@ import argparse
 from args.utils import str2bool
 
 
-def parse_pugan_args():
+def parse_8i_args():
     parser = argparse.ArgumentParser(description='Model Arguments')
     # seed
     parser.add_argument('--seed', default=21, type=float, help='seed')
@@ -16,7 +16,7 @@ def parse_pugan_args():
     # dataset
     parser.add_argument('--dataset', default='pugan', type=str, help='pu1k or pugan')
     # parser.add_argument('--h5_file_path', default="./data/PU-GAN/train/PUGAN_poisson_256_poisson_1024.h5", type=str, help='the path of train dataset')
-    parser.add_argument('--h5_file_path', default="/home/v-chendwang/test-playground/Grad-PU/data/8i/longdress/8i_poisson_8_poisson_16.h5", type=str, help='the path of train dataset')
+    parser.add_argument('--h5_file_path', default="/home/chendong/PU-LUT/data/longdress/8i_poisson_256_poisson_512.h5", type=str, help='the path of train dataset')
     parser.add_argument('--num_points', default=256, type=int, help='the points number of each input patch')
     # parser.add_argument('--num_points', default=8, type=int, help='the points number of each input patch')
     parser.add_argument('--skip_rate', default=1, type=int, help='used for dataset')
@@ -26,7 +26,7 @@ def parse_pugan_args():
     parser.add_argument('--jitter_max', type=float, default=0.03, help="jitter augmentation")
     # train
     parser.add_argument('--epochs', default=60, type=int, help='training epochs')
-    parser.add_argument('--batch_size', default=32, type=int, help='batch size')
+    parser.add_argument('--batch_size', default=16, type=int, help='batch size')
     parser.add_argument('--num_workers', default=4, type=int, help='workers number')
     parser.add_argument('--print_rate', default=200, type=int, help='loss print frequency in each epoch')
     parser.add_argument('--save_rate', default=10, type=int, help='model save frequency')
@@ -35,6 +35,7 @@ def parse_pugan_args():
     # model
     parser.add_argument('--k', default=8, type=int, help='neighbor number')
     parser.add_argument('--up_rate', default=2, type=int, help='upsampling rate')
+    parser.add_argument('--dilation_rate', default=2, type=int, help='dilation rate')
     parser.add_argument('--block_num', default=3, type=int, help='dense block number in the feature extractor')
     parser.add_argument('--layer_num', default=3, type=int, help='dense layer number in each dense block')
     parser.add_argument('--feat_dim', default=32, type=int, help='input(output) feature dimension in each dense block' )
@@ -55,7 +56,7 @@ def parse_pugan_args():
     parser.add_argument('--test_input_path', default='./data/8i/longdress/input_2X/input_ld/', type=str, help='the test input data path')
     # parser.add_argument('--ckpt_path', default='./pretrained_model/pugan/ckpt/ckpt-epoch-60.pth', type=str, help='the pretrained model path')
     parser.add_argument('--ckpt_path', default='./output/patch_8_k_8_ratio_2/ckpt/ckpt-epoch-60.pth', type=str, help='the pretrained model path')
-    parser.add_argument('--patch_rate', default=3, type=int, help='used for patch generation')
+    parser.add_argument('--patch_rate', default=2, type=int, help='used for patch generation')
     parser.add_argument('--save_dir', default='./data/8i/longdress/input_2X/results/interpolation_ld', type=str, help='save upsampled point cloud')
     parser.add_argument('--double_4X', default=False, type=str2bool, help='conduct 4X twice to get 16X')
 

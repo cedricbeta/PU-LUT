@@ -32,8 +32,8 @@ print(len(gt_paths))
 
 
 gt = load(gt_paths[0])[:, :3]
-pred_placeholder = tf.placeholder(tf.float32, [1, gt.shape[0], 3])
-gt_placeholder = tf.placeholder(tf.float32, [1, gt.shape[0], 3])
+pred_placeholder = tf.placeholder(tf.float32, [1, None, 3])
+gt_placeholder = tf.placeholder(tf.float32, [1, None, 3])
 pred_tensor, centroid, furthest_distance = normalize_point_cloud(pred_placeholder)
 gt_tensor, centroid, furthest_distance = normalize_point_cloud(gt_placeholder)
 
@@ -145,10 +145,19 @@ with tf.Session() as sess:
             for gt_path, pred_path in gt_pred_pairs:
                 row = {}
                 gt = load(gt_path)[:, :3]
-                gt = gt[np.newaxis, ...]
+                
                 pred = pc_util.load(pred_path)
                 pred = pred[:, :3]
+                # print(pred.shape, gt.shape)
+                if pred.shape[0] > gt.shape[0]:
+                    pred = pred[:gt.shape[0], :]
+                else:
+                    gt = gt[:pred.shape[0], :]
+                
+                # print(pred.shape, gt.shape)
 
+                gt = gt[np.newaxis, ...]
+                
                 row["name"] = os.path.basename(pred_path)
                 pred = pred[np.newaxis, ...]
                 cd_forward_value, cd_backward_value = sess.run([cd_forward, cd_backward], feed_dict={pred_placeholder:pred, gt_placeholder:gt})

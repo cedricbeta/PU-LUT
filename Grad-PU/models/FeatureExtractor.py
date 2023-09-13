@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from models.utils import get_knn_pts, index_points
+from models.utils import get_knn_pts, index_points, dilate_last_dimension
 from einops import repeat, rearrange
 from models.pointops.functions import pointops
 
@@ -9,7 +9,8 @@ class Point3DConv(nn.Module):
     def __init__(self, args):
         super(Point3DConv, self).__init__()
 
-        self.k = args.k
+        self.k = args.k * args.dilation_rate
+        self.dilation_rate = args.dilation_rate
         self.args = args
         self.conv_delta = nn.Sequential(
             nn.Conv2d(3, args.growth_rate, 1),
@@ -33,8 +34,12 @@ class Point3DConv(nn.Module):
         if knn_idx == None:
             # (b, 3, n, k), (b, n, k)
             knn_pts, knn_idx = get_knn_pts(self.k, pts, pts, return_idx=True)
+            knn_idx = dilate_last_dimension(knn_idx, 1.0 / self.dilation_rate)
+            knn_pts = index_points(pts, knn_idx)
         else:
             knn_pts = index_points(pts, knn_idx)
+        
+        
         # (b, 3, n, k)
         knn_delta = knn_pts - pts[..., None]
         # (b, c, n, k)
@@ -112,7 +117,8 @@ class FeatureExtractor(nn.Module):
     def __init__(self, args):
         super(FeatureExtractor, self).__init__()
 
-        self.k = args.k
+        self.k = args.k * args.dilation_rate
+        self.dilation_rate = args.dilation_rate
         self.conv_init = nn.Sequential(
             nn.Conv1d(3, args.feat_dim, 1),
             nn.BatchNorm1d(args.feat_dim),
@@ -129,16 +135,17 @@ class FeatureExtractor(nn.Module):
         # input: (b, 3, n)
 
         # get knn_idx: (b, n, 3)
-        print("forward func1: ", pts.shape)
+        # print("forward func1: ", pts.shape)
         pts_trans = rearrange(pts, 'b c n -> b n c').contiguous()
-        print("forward func1.1: ", pts_trans.shape)
+        # print("forward func1.1: ", pts_trans.shape)
         # (b, m, k)
         knn_idx = pointops.knnquery_heap(self.k, pts_trans, pts_trans).long()
+        knn_idx = dilate_last_dimension(knn_idx, 1.0 / self.dilation_rate)
         
-        print("forward func1.2: ", knn_idx.shape)
+        # print("forward func1.2: ", knn_idx.shape)
         # (b, c, n)
         init_feats = self.conv_init(pts)
-        print("forward func2: ", init_feats.shape)
+        # print("forward func2: ", init_feats.shape)
         local_feats = []
         local_feats.append(init_feats)
         # local features

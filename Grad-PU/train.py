@@ -10,6 +10,7 @@ from dataset.dataset import PUDataset
 from models.P2PNet import P2PNet
 from args.pu1k_args import parse_pu1k_args
 from args.pugan_args import parse_pugan_args
+from args.ld_args import parse_8i_args
 from args.utils import str2bool
 from models.utils import *
 import argparse
@@ -43,9 +44,11 @@ def train(args):
     logger.info('========== Build Model ==========')
     model = P2PNet(args)
     model = model.cuda()
+    
     # get the parameter size
     para_num = sum([p.numel() for p in model.parameters()])
     logger.info("=== The number of parameters in model: {:.4f} K === ".format(float(para_num / 1e3)))
+    logger.info("=== The dilation rate: %d " % (args.dilation_rate))
     # log
     logger.info(args)
     logger.info(repr(model))
@@ -134,7 +137,7 @@ if __name__ == "__main__":
     if train_args.dataset == 'pu1k':
         model_args = parse_pu1k_args()
     else:
-        model_args = parse_pugan_args()
+        model_args = parse_8i_args()
 
     reset_model_args(train_args, model_args)
 

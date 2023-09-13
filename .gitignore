@@ -2,3 +2,5 @@
 /data
 /PCLprocess/build
 /Grad-PU/models
+/Grad-PU/output
+*.pyc

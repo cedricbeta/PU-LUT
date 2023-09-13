@@ -9,6 +9,7 @@ from einops import rearrange
 from time import time
 from args.pu1k_args import parse_pu1k_args
 from args.pugan_args import parse_pugan_args
+from args.ld_args import parse_8i_args
 from args.utils import str2bool
 from tqdm import tqdm
 import argparse
@@ -74,9 +75,9 @@ def pcd_upsample(args, model, input_pcd):
 
     # interpolate: (b, 3, m)
     interpolated_pcd = midpoint_interpolate(args, input_pcd)
-    updated_pcd = interpolated_pcd
+    # updated_pcd = interpolated_pcd
     # update: (b, 3, m)
-    # updated_pcd = pcd_update(args, model, interpolated_pcd)
+    updated_pcd = pcd_update(args, model, interpolated_pcd)
 
     return updated_pcd
 
@@ -237,12 +238,12 @@ def parse_test_args():
     parser = argparse.ArgumentParser(description='Test Arguments')
 
     parser.add_argument('--dataset', default='pu1k', type=str, help='pu1k or pugan')
-    parser.add_argument('--test_input_path', default='./data/PU1K/test/input_2048/input_2048/', type=str,
+    parser.add_argument('--test_input_path', default='../data/longdress/input_2X/input_ld', type=str,
                         help='the test input data path')
-    parser.add_argument('--ckpt_path', default='./pretrained_model/pu1k/ckpt/ckpt-epoch-60.pth', type=str, help='the pretrained model path')
-    parser.add_argument('--save_dir', default='pcd', type=str, help='save upsampled point cloud')
+    parser.add_argument('--ckpt_path', default='/home/chendong/PU-LUT/Grad-PU/output/2023-09-05T20:40:55.594176/ckpt/ckpt-epoch-60.pth', type=str, help='the pretrained model path')
+    parser.add_argument('--save_dir', default='../data/longdress/input_2X/pred_k8_d1', type=str, help='save upsampled point cloud')
     parser.add_argument('--truncate_distance', default=True, type=str2bool, help='whether truncate distance')
-    parser.add_argument('--up_rate', default=4, type=int, help='upsampling rate')
+    parser.add_argument('--up_rate', default=2, type=int, help='upsampling rate')
     parser.add_argument('--double_4X', default=False, type=str2bool, help='conduct 4X twice to get 16X')
 
     args = parser.parse_args()
@@ -252,11 +253,15 @@ def parse_test_args():
 if __name__ == "__main__":
     test_args = parse_test_args()
     assert test_args.dataset in ['pu1k', 'pugan']
-
-    if test_args.dataset == 'pu1k':
-        model_args = parse_pu1k_args()
-    else:
-        model_args = parse_pugan_args()
+    torch.cuda.empty_cache()    
+    # if test_args.dataset == 'pu1k':
+    #     model_args = parse_pu1k_args()
+    # else:
+    #     model_args = parse_pugan_args()
+    
+    model_args = parse_8i_args()
+    
+    print(model_args.dilation_rate)
 
     reset_model_args(test_args, model_args)
 
